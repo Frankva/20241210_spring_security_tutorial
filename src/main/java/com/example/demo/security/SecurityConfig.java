@@ -43,7 +43,13 @@ public class SecurityConfig {
                 .roles("STUDENT") // ROLE_STUDENT
                 .build();
 
-        return new InMemoryUserDetailsManager(userDetails);
+        UserDetails lindaUser = User.builder()
+                .username("linda")
+                .password(passwordEncoder.encode("password123"))
+                .roles("ADMIN")
+                .build();
+
+        return new InMemoryUserDetailsManager(userDetails, lindaUser);
     }
 
 }
