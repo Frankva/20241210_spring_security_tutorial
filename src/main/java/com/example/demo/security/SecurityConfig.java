@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static com.example.demo.security.ApplicationUserRole.*;
 
@@ -30,6 +31,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+           // .csrf((csrf) -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .csrf((csrf) -> csrf.disable())
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/", "/css/*", "/js/*").permitAll()
@@ -40,7 +42,9 @@ public class SecurityConfig {
                 // .requestMatchers(HttpMethod.PUT, "management/api/**").hasAuthority(COURSE_WRITE.getPermission())
                 // .requestMatchers(HttpMethod.GET, "management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
                 .anyRequest().permitAll()
-            ).httpBasic(Customizer.withDefaults());
+            )
+                 .httpBasic(Customizer.withDefaults());
+                //.formLogin(Customizer.withDefaults());
 
         return http.build();
     }
