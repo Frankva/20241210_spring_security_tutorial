@@ -1,8 +1,12 @@
 package com.example.demo.security;
 
+import com.example.demo.auth.ApplicationUserService;
 import com.example.demo.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,11 +27,13 @@ import static com.example.demo.security.ApplicationUserRole.*;
 @EnableMethodSecurity // for activate @PreAuthorize
 public class SecurityConfig {
 
-    private final PasswordEncoder passwordEncoder;
+    // private final PasswordEncoder passwordEncoder;
+    // private final ApplicationUserService applicationUserService;
 
-    public SecurityConfig(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
+    // public SecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
+    //     this.passwordEncoder = passwordEncoder;
+    //     this.applicationUserService = applicationUserService;
+    // }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -53,30 +59,42 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // @Bean
+    // public UserDetailsService userDetailsService() {
+    //     UserDetails userDetails = User.builder()
+    //             .username("annasmith")
+    //             .password(passwordEncoder.encode("password"))
+    //             // .roles(STUDENT.name()) // ROLE_STUDENT
+    //             .authorities(STUDENT.getGrantedAuthorities())
+    //             .build();
+
+    //     UserDetails lindaUser = User.builder()
+    //             .username("linda")
+    //             .password(passwordEncoder.encode("password"))
+    //             // .roles(ADMIN.name()) // ROLE_ADMIN
+    //             .authorities(ADMIN.getGrantedAuthorities())
+    //             .build();
+
+    //     UserDetails tomUser = User.builder()
+    //             .username("tom")
+    //             .password(passwordEncoder.encode("password"))
+    //             // .roles(ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
+    //             .authorities(ADMINTRAINEE.getGrantedAuthorities())
+    //             .build();
+
+    //     return new InMemoryUserDetailsManager(userDetails, lindaUser, tomUser);
+    // }
+
+
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails userDetails = User.builder()
-                .username("annasmith")
-                .password(passwordEncoder.encode("password"))
-                // .roles(STUDENT.name()) // ROLE_STUDENT
-                .authorities(STUDENT.getGrantedAuthorities())
-                .build();
+    public AuthenticationManager authenticationManager(
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
 
-        UserDetails lindaUser = User.builder()
-                .username("linda")
-                .password(passwordEncoder.encode("password"))
-                // .roles(ADMIN.name()) // ROLE_ADMIN
-                .authorities(ADMIN.getGrantedAuthorities())
-                .build();
-
-        UserDetails tomUser = User.builder()
-                .username("tom")
-                .password(passwordEncoder.encode("password"))
-                // .roles(ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
-                .authorities(ADMINTRAINEE.getGrantedAuthorities())
-                .build();
-
-        return new InMemoryUserDetailsManager(userDetails, lindaUser, tomUser);
+        return new ProviderManager(authenticationProvider);
     }
-
+    
 }
