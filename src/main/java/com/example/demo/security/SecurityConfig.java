@@ -65,14 +65,14 @@ public class SecurityConfig {
 
         UserDetails lindaUser = User.builder()
                 .username("linda")
-                .password(passwordEncoder.encode("password123"))
+                .password(passwordEncoder.encode("password"))
                 // .roles(ADMIN.name()) // ROLE_ADMIN
                 .authorities(ADMIN.getGrantedAuthorities())
                 .build();
 
         UserDetails tomUser = User.builder()
                 .username("tom")
-                .password(passwordEncoder.encode("password123"))
+                .password(passwordEncoder.encode("password"))
                 // .roles(ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
                 .authorities(ADMINTRAINEE.getGrantedAuthorities())
                 .build();
