@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
 import static com.example.demo.security.ApplicationUserRole.*;
 
@@ -27,22 +28,23 @@ import static com.example.demo.security.ApplicationUserRole.*;
 @EnableMethodSecurity // for activate @PreAuthorize
 public class SecurityConfig {
 
-    // private final PasswordEncoder passwordEncoder;
-    // private final ApplicationUserService applicationUserService;
+   private final PasswordEncoder passwordEncoder;
+   private final ApplicationUserService applicationUserService;
 
-    // public SecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
-    //     this.passwordEncoder = passwordEncoder;
-    //     this.applicationUserService = applicationUserService;
-    // }
+   public SecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
+       this.passwordEncoder = passwordEncoder;
+       this.applicationUserService = applicationUserService;
+   }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.headers(a -> a.addHeaderWriter(new StaticHeadersWriter("a", "b")));
         http
            // .csrf((csrf) -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .csrf((csrf) -> csrf.disable())
-            .sessionManagement(r -> r
+            .sessionManagement(session -> session
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(r->r))
+            .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager()))
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/", "/css/*", "/js/*").permitAll()
                 .requestMatchers("/api/**").hasRole(STUDENT.name())
@@ -52,10 +54,9 @@ public class SecurityConfig {
                 // .requestMatchers(HttpMethod.PUT, "management/api/**").hasAuthority(COURSE_WRITE.getPermission())
                 // .requestMatchers(HttpMethod.GET, "management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
                 .anyRequest().permitAll()
-            )
-                 .httpBasic(Customizer.withDefaults());
+            );
+                // .httpBasic(Customizer.withDefaults());
                 //.formLogin(Customizer.withDefaults());
-
         return http.build();
     }
 
@@ -87,12 +88,10 @@ public class SecurityConfig {
 
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder) {
+    public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        authenticationProvider.setUserDetailsService(this.applicationUserService);
+        authenticationProvider.setPasswordEncoder(this.passwordEncoder);
 
         return new ProviderManager(authenticationProvider);
     }

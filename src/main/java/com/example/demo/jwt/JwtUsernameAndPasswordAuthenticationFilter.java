@@ -35,15 +35,18 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
             );
 
             Authentication authenticate = authenticationManager.authenticate(authentication);
+            
+            String token = this.getToken(authenticate);
+
+            response.addHeader("Authorization", "Bearer " + token);
+            
             return authenticate;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        super.successfulAuthentication(request, response, chain, authResult);
+    
+    protected String getToken(Authentication authResult) {
         String key = "jljrewuionjr7392ujjvmayrjmfuj8793ujlkcuiourufvmsr823urydhcnskjfjlabananekeuru8347cruieurouweoruoewuriouufudisuofaudmjjijofjasjer231e";
 
         String token = Jwts.builder()
@@ -53,7 +56,26 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
                 .expiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))
                 .signWith(Keys.hmacShaKeyFor(key.getBytes()))
                 .compact();
-
-        response.addHeader("Authorization", "Bearer " + token);
+        
+        return token;
     }
+
+    //@Override
+    //protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    //    super.successfulAuthentication(request, response, chain, authResult);
+    //    String key = "jljrewuionjr7392ujjvmayrjmfuj8793ujlkcuiourufvmsr823urydhcnskjfjlabananekeuru8347cruieurouweoruoewuriouufudisuofaudmjjijofjasjer231e";
+
+    //    String token = Jwts.builder()
+    //            .subject(authResult.getName())
+    //            .claim("authorities", authResult.getAuthorities())
+    //            .issuedAt(new Date())
+    //            .expiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))
+    //            .signWith(Keys.hmacShaKeyFor(key.getBytes()))
+    //            .compact();
+
+    //    response.addHeader("Authorization", "Bearer " + token);
+    //    response.setHeader("Authorization", "Bearer " + token);
+    //    chain.doFilter(request, response);
+    //}
+    
 }
