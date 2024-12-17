@@ -28,7 +28,11 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         
         String authorizationHeader = request.getHeader("Authorization");
-        if (Strings.isNotEmpty(authorizationHeader) || !authorizationHeader.startsWith("Bearer ")) {
+        // System.out.println(authorizationHeader);
+        // System.out.println(Strings.isNotEmpty(authorizationHeader));
+        // System.out.println(!Strings.isNotEmpty(authorizationHeader) || !Strings.isNotBlank(authorizationHeader) || !authorizationHeader.startsWith("Bearer "));
+        
+        if (!Strings.isNotEmpty(authorizationHeader) || !Strings.isNotBlank(authorizationHeader) || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -38,7 +42,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
             String secretKey = "jljrewuionjr7392ujjvmayrjmfuj8793ujlkcuiourufvmsr823urydhcnskjfjlabananekeuru8347cruieurouweoruoewuriouufudisuofaudmjjijofjasjer231e";
 
             Jws<Claims> claimsJws = Jwts.parser()
-                    .decryptWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                    .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
                     .build()
                     .parseSignedClaims(token);
             
@@ -58,7 +62,12 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (JwtException e) {
-            throw new IllegalStateException(String.format("Token %s cannot be truest", token));
+            // TODO return 403
+            // throw new IllegalStateException(String.format("Token %s cannot be trusted", token));
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Token non valide");
+            return;
         }
+        
+        filterChain.doFilter(request, response);
     }
 }
