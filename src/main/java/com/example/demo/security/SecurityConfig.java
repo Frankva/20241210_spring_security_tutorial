@@ -1,6 +1,7 @@
 package com.example.demo.security;
 
 import com.example.demo.auth.ApplicationUserService;
+import com.example.demo.jwt.JwtConfig;
 import com.example.demo.jwt.JwtTokenVerifier;
 import com.example.demo.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
+import javax.crypto.SecretKey;
+
 import static com.example.demo.security.ApplicationUserRole.*;
 
 
@@ -31,10 +34,14 @@ public class SecurityConfig {
 
    private final PasswordEncoder passwordEncoder;
    private final ApplicationUserService applicationUserService;
+   private final SecretKey secretKey;
+   private final JwtConfig jwtConfig;
 
-   public SecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
+   public SecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService, SecretKey secretKey, JwtConfig jwtConfig) {
        this.passwordEncoder = passwordEncoder;
        this.applicationUserService = applicationUserService;
+       this.secretKey = secretKey;
+       this.jwtConfig = jwtConfig;
    }
 
     @Bean
@@ -45,8 +52,8 @@ public class SecurityConfig {
             .csrf((csrf) -> csrf.disable())
             .sessionManagement(session -> session
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager()))
-            .addFilterAfter(new JwtTokenVerifier(), JwtUsernameAndPasswordAuthenticationFilter.class)
+            .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), this.jwtConfig, this.secretKey))
+            .addFilterAfter(new JwtTokenVerifier(this.secretKey, this.jwtConfig), JwtUsernameAndPasswordAuthenticationFilter.class)
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/", "/css/*", "/js/*").permitAll()
                 .requestMatchers("/api/**").hasRole(STUDENT.name())
