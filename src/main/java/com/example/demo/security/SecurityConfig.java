@@ -37,7 +37,10 @@ public class SecurityConfig {
    private final SecretKey secretKey;
    private final JwtConfig jwtConfig;
 
-   public SecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService, SecretKey secretKey, JwtConfig jwtConfig) {
+   public SecurityConfig(PasswordEncoder passwordEncoder, 
+                         ApplicationUserService applicationUserService,
+                         SecretKey secretKey,
+                         JwtConfig jwtConfig) {
        this.passwordEncoder = passwordEncoder;
        this.applicationUserService = applicationUserService;
        this.secretKey = secretKey;

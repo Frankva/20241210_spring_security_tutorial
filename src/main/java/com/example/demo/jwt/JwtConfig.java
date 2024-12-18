@@ -4,11 +4,13 @@ import com.google.common.net.HttpHeaders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import javax.crypto.SecretKey;
 
 // prefix is the name of config in application.properties
 @ConfigurationProperties(prefix = "application.jwt")
+@Configuration
 public class JwtConfig {
     private String secretKey;
     private String tokenPrefix;
@@ -18,7 +20,7 @@ public class JwtConfig {
     }
 
     public String getSecretKey() {
-        return secretKey;
+        return this.secretKey;
     }
 
     public void setSecretKey(String secretKey) {
